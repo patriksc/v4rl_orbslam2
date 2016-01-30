@@ -1,0 +1,20 @@
+add_custom_target(headers_orbslam SOURCES
+Converter.h
+Frame.h
+FramePublisher.h
+Initializer.h
+KeyFrameDatabase.h
+KeyFrame.h
+LocalMapping.h
+LoopClosing.h
+Map.h
+MapPoint.h
+MapPublisher.h
+Optimizer.h
+ORBextractor.h
+ORBmatcher.h
+ORBVocabulary.h
+PnPsolver.h
+Sim3Solver.h
+Tracking.h
+)
