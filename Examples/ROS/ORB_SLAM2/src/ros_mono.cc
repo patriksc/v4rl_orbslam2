@@ -61,7 +61,7 @@ public:
 
     void publish_data(){
         if (data_flag){
-            std::cout << "*** publishing opt msg - num of KFs: " << p_msg_opt->keyframes.size() << " ***" << std::endl;
+            std::cout << "*** publishing opt msg - num of KFs: " << p_msg_opt->keyframes.size() << "; num of MPs: " << p_msg_opt->mappoints.size() << " ***" << std::endl;
             pub_.publish(*p_msg_opt);
             p_msg_opt = new jslam_msgs::orbslam_optimization_data;
             std::cout << "global msg RESET" << std::endl;

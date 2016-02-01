@@ -61,19 +61,29 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
     jslam_msgs::orbslam_optimization_data msg_opt;
     long unsigned int maxID = 0;
 
+    std::cout << "KFs to enter: " << vpKFs.size() << std::endl;
+
     for(size_t i=0; i<vpKFs.size(); i++)
     {
         KeyFrame* pKF = vpKFs[i];
         if(pKF->isBad())
+        {
+            std::cout << "KF is bad" << std::endl;
             continue;
+        }
         jslam_msgs::orbslam2_kf msg;
         //msg.header.stamp = ros::Time::now();
         msg.id = pKF->mnId;
+        //std::cout << "Keyframe id: " << pKF->mnId << std::endl;
+        //std::cout << "Message id: " << msg.id << std::endl;
 
         for(int iii = 0; iii < 4; ++iii)
         {
             for(int jjj = 0; jjj < 4; ++jjj){
-                msg.pose_as_m44[4*iii+jjj] = pKF->GetPose().at<double>(iii,jjj);
+                msg.pose_as_m44[4*iii+jjj] = pKF->GetPose().at<float>(iii,jjj);
+                //std::cout << "i: " << iii << " ; j: " << jjj << std::endl;
+                //std::cout << "Keyframe matrix value: " << pKF->GetPose().at<float>(iii,jjj) << std::endl;
+                //std::cout << "Message matrix value: " << msg.pose_as_m44[4*iii+jjj] << std::endl;
             }
         }
 
@@ -84,11 +94,15 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
             cvk.y = pKF->mvKeysUn[iter].pt.y;
             cvk.omega = pKF->mvInvLevelSigma2[pKF->mvKeysUn[iter].octave];
             msg.cv_keypoints.push_back(cvk);
+            //std::cout << "keypoint x value: " << pKF->mvKeysUn[iter].pt.x << std::endl;
+            //std::cout << "message x value: " << cvk.x << std::endl;
+            //std::cout << "keypoint omega value: " << pKF->mvInvLevelSigma2[pKF->mvKeysUn[iter].octave] << std::endl;
+            //std::cout << "message omega value: " << cvk.omega << std::endl;
         }
 
         //msg_opt.keyframes.push_back(msg);
         p_msg_opt->keyframes.push_back(msg);
-        std::cout << "Added KF to global msg" << std::endl;
+        //std::cout << "Added KF to global msg" << std::endl;
 
         if(pKF->mnId>maxID) maxID=pKF->mnId;
     }
@@ -97,12 +111,18 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
     {
         MapPoint* pMP = vpMP[i];
         if(pMP->isBad())
+        {
+            std::cout << "MP is bad" << std::endl;
             continue;
+        }
         jslam_msgs::orbslam2_mappoint mpmsg;
         mpmsg.id = pMP->mnId+maxID+1;//pMP->mnId;
-        mpmsg.pos.x = pMP->GetWorldPos().at<double>(0);
-        mpmsg.pos.y = pMP->GetWorldPos().at<double>(1);
-        mpmsg.pos.z = pMP->GetWorldPos().at<double>(2);
+        mpmsg.pos.x = (double)(pMP->GetWorldPos().at<float>(0));
+        mpmsg.pos.y = (double)(pMP->GetWorldPos().at<float>(1));
+        mpmsg.pos.z = (double)(pMP->GetWorldPos().at<float>(2));
+
+        //std::cout << "map point x value: " << pMP->GetWorldPos().at<float>(0) << std::endl;
+        //std::cout << "message x value: " << mpmsg.pos.x << std::endl;
 
         const map<KeyFrame*,size_t> observations = pMP->GetObservations();
 
@@ -110,12 +130,18 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
         {
             KeyFrame* pKF = mit->first;
             if(pKF->isBad() || pKF->mnId>maxID)
+            {
+                std::cout << "KF is bad" << std::endl;
                 continue;
+            }
             jslam_msgs::orbslam2_observation ob;
             ob.keyframe_id = pKF->mnId;
             ob.feature_id = mit->second;
             mpmsg.observations.push_back(ob);
         }
+
+        p_msg_opt->mappoints.push_back(mpmsg);
+
     }
 
     if(p_msg_opt->keyframes.size() > 0){

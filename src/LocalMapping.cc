@@ -25,6 +25,9 @@
 
 #include<mutex>
 
+int addedkfs = 0;
+int culledkfs = 0;
+
 namespace ORB_SLAM2
 {
 
@@ -116,8 +119,11 @@ void LocalMapping::InsertKeyFrame(KeyFrame *pKF)
     unique_lock<mutex> lock(mMutexNewKFs);
     mlNewKeyFrames.push_back(pKF);
     mbAbortBA=true;
+    ++addedkfs;
+    std::cout << "Added / culled KFs: " << addedkfs << "/" << culledkfs << std::endl;
     //patrisc: insert new KF
     //std::cout << "##### Inserting new KF #####" << std::endl << "Pose: " << pKF->GetPose() << std::endl;
+    //std::cout << "matrix type: " << pKF->GetPose().type() << std::endl;
 }
 
 
@@ -695,7 +701,11 @@ void LocalMapping::KeyFrameCulling()
         }  
 
         if(nRedundantObservations>0.9*nMPs)
+        {
             pKF->SetBadFlag();
+            ++culledkfs;
+            std::cout << "Added / culled KFs: " << addedkfs << "/" << culledkfs << std::endl;
+        }
     }
 }
 
