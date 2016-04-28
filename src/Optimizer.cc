@@ -58,6 +58,7 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
     //ros::Publisher pub_opt_data;
     //pub_opt_data = nh.advertise<jslam_msgs::orbslam_optimization_data>("orb_opt_data",1);
 
+    /*
     jslam_msgs::orbslam_optimization_data msg_opt;
     long unsigned int maxID = 0;
 
@@ -151,7 +152,7 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
 
     //pub_opt_data.publish(msg_opt);
 
-
+    */
     //------------------------------------------
 
     vector<bool> vbNotIncludedMP;

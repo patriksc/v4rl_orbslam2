@@ -40,6 +40,12 @@
 
 #include <mutex>
 
+#include <jslam_msgs/jslam_orb2_kf.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/Image.h>
+extern jslam_msgs::jslam_orb2_kfPtr pKfMes;
+extern bool bNewKf;
+
 namespace ORB_SLAM2
 {
 
@@ -214,6 +220,10 @@ protected:
     bool mbRGB;
 
     list<MapPoint*> mlpTemporalPoints;
+
+    //patriksc: mod
+    jslam_msgs::jslam_orb2_kfPtr pCurKfMsg_;
+    //------------------
 };
 
 } //namespace ORB_SLAM

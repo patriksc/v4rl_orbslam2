@@ -145,7 +145,7 @@ bool LoopClosing::DetectLoop()
     if(vpCandidateKFs.empty())
     {
         mpKeyFrameDB->add(mpCurrentKF);
-        mvConsistentGroups.clear();
+        mvConsistentGroups.clear(); //Why deleting the found consistent groups in this case?
         mpCurrentKF->SetErase();
         return false;
     }
@@ -156,14 +156,16 @@ bool LoopClosing::DetectLoop()
     // We must detect a consistent loop in several consecutive keyframes to accept it
     mvpEnoughConsistentCandidates.clear();
 
-    vector<ConsistentGroup> vCurrentConsistentGroups;
+    vector<ConsistentGroup> vCurrentConsistentGroups; //pair <set<KF*>,int> --> int counts consistent groups found for this group
     vector<bool> vbConsistentGroup(mvConsistentGroups.size(),false);
+    //mvConsistentGroups stores the last found consistent groups.
     for(size_t i=0, iend=vpCandidateKFs.size(); i<iend; i++)
     {
         KeyFrame* pCandidateKF = vpCandidateKFs[i];
 
         set<KeyFrame*> spCandidateGroup = pCandidateKF->GetConnectedKeyFrames();
         spCandidateGroup.insert(pCandidateKF);
+        //group with candidate and connected KFs
 
         bool bEnoughConsistent = false;
         bool bConsistentForSomeGroup = false;
@@ -176,6 +178,7 @@ bool LoopClosing::DetectLoop()
             {
                 if(sPreviousGroup.count(*sit))
                 {
+                    //KF found that is contained in candidate's group and comparison group
                     bConsistent=true;
                     bConsistentForSomeGroup=true;
                     break;
@@ -203,7 +206,7 @@ bool LoopClosing::DetectLoop()
         // If the group is not consistent with any previous group insert with consistency counter set to zero
         if(!bConsistentForSomeGroup)
         {
-            ConsistentGroup cg = make_pair(spCandidateGroup,0);
+            ConsistentGroup cg = make_pair(spCandidateGroup,0); //For "ConsistentGroup" the "int" is initialized with 0
             vCurrentConsistentGroups.push_back(cg);
         }
     }

@@ -3,6 +3,8 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 IF(NOT ROS_BUILD_TYPE)
   SET(ROS_BUILD_TYPE Release)
 ENDIF()

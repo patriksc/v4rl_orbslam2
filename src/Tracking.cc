@@ -37,6 +37,8 @@
 
 #include<mutex>
 
+jslam_msgs::jslam_orb2_kfPtr pKfMes;
+bool bNewKf;
 
 using namespace std;
 
@@ -48,6 +50,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer*>(NULL)), mpSystem(pSys),
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
 {
+    //patricsc: reset ptr to get msg out
+    pKfMes.reset(new jslam_msgs::jslam_orb2_kf);
     // Load camera parameters from settings file
 
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
@@ -258,6 +262,24 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
         mCurrentFrame = Frame(mImGray,timestamp,mpIniORBextractor,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
     else
         mCurrentFrame = Frame(mImGray,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+
+    //patriksc: create message
+    pCurKfMsg_.reset(new jslam_msgs::jslam_orb2_kf);
+    cv_bridge::CvImage cvimg;
+    cvimg.image = mImGray;
+    cvimg.encoding = std::string("mono16");
+    sensor_msgs::ImagePtr immsg;
+    immsg = cvimg.toImageMsg();
+    pCurKfMsg_->img_grey = *immsg;
+    pCurKfMsg_->timestamp = timestamp;
+
+    /*
+    cout << "ORB2 CV Mat specs:" << endl;
+    cout << "Type" << mImGray.type() << endl;
+    cout << "Size" << mImGray.size << endl;
+    cout << "Dims" << mImGray.dims << endl;
+    //-------------------------
+    */
 
     Track();
 
@@ -1145,7 +1167,21 @@ void Tracking::CreateNewKeyFrame()
         }
     }
 
-    mpLocalMapper->InsertKeyFrame(pKF);
+    std::cout << "ORB2 created KF" << std::endl;
+
+    mpLocalMapper->InsertKeyFrame(pKF);  //patriksc: kf is created and leaves tracker -> Interface Tracker -> Mapper
+
+    for(int iii = 0; iii < 4; ++iii)
+    {
+        for(int jjj = 0; jjj < 4; ++jjj){
+            pCurKfMsg_->pose_as_m44[4*iii+jjj] = mCurrentFrame.mTcw.at<float>(iii,jjj);
+            //std::cout << "i: " << iii << " ; j: " << jjj << std::endl;
+            //std::cout << "Keyframe matrix value: " << pKF->GetPose().at<float>(iii,jjj) << std::endl;
+            //std::cout << "Message matrix value: " << msg.pose_as_m44[4*iii+jjj] << std::endl;
+        }
+    }
+    pKfMes = pCurKfMsg_;
+    bNewKf = true;
 
     mpLocalMapper->SetNotStop(false);
 

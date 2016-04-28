@@ -34,6 +34,8 @@
 //patriksc: mod
 #include <Optimizer.h>
 #include <jslam_msgs/orbslam_optimization_data.h>
+#include <Tracking.h>
+#include <jslam_msgs/jslam_orb2_kf.h>
 
 //jslam_msgs::orbslam_optimization_data* p_msg_opt;
 //bool data_flag;
@@ -56,7 +58,8 @@ class data_publisher
 {
 public:
     data_publisher(ros::NodeHandle nh) : nh_(nh){
-        pub_ = nh_.advertise<jslam_msgs::orbslam_optimization_data>("orb_opt_data",1);
+        //pub_ = nh_.advertise<jslam_msgs::orbslam_optimization_data>("orb_opt_data",1);
+        pub_ = nh_.advertise<jslam_msgs::jslam_orb2_kf>("orb2_output",1);
     }
 
     void publish_data(){
@@ -70,6 +73,16 @@ public:
         }
     }
 
+    void publish_orb2_output()
+    {
+        if(bNewKf)
+        {
+            std::cout << "*** publishing ORB2 Frame"<< std::endl;
+            pub_.publish(*pKfMes);
+            bNewKf = false;
+        }
+    }
+
 private:
     ros::NodeHandle nh_;
     ros::Publisher pub_;
@@ -78,50 +91,61 @@ private:
 //-----------------
 
 int main(int argc, char **argv)
-{
+{    
     ros::init(argc, argv, "Mono");
     ros::start();
 
     if(argc != 3)
     {
-        cerr << endl << "Usage: rosrun ORB_SLAM2 Mono path_to_vocabulary path_to_settings" << endl;        
+        cerr << endl << "Usage: rosrun ORB_SLAM2 Mono path_to_vocabulary path_to_settings" << endl;
         ros::shutdown();
         return 1;
-    }    
-
-    // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
-
-    ImageGrabber igb(&SLAM);
-
-    ros::NodeHandle nodeHandler;
-    ros::Subscriber sub = nodeHandler.subscribe("/camera/image_raw", 1, &ImageGrabber::GrabImage,&igb);
-
-    //patriksc: mod
-    p_msg_opt = new jslam_msgs::orbslam_optimization_data;
-    std::cout << "global msg INITIALIZED (RESET)" << std::endl;
-    data_flag = false;
-    std::cout << "data flag INITIALIZED (FALSE)" << std::endl;
-
-    data_publisher dpub(nodeHandler);
-
-    ros::Rate r(100);
-    while(ros::ok())
-    {
-        dpub.publish_data();
-        ros::spinOnce();
-        r.sleep();
     }
 
-    //-----------------
+    try
+    {
+        // Create SLAM system. It initializes all system threads and gets ready to process frames.
+        ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
 
-    //ros::spin();
+        ImageGrabber igb(&SLAM);
 
-    // Stop all threads
-    SLAM.Shutdown();
+        ros::NodeHandle nodeHandler;
+        ros::Subscriber sub = nodeHandler.subscribe("/camera/image_raw", 1, &ImageGrabber::GrabImage,&igb);
 
-    // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+        //patriksc: mod
+        //p_msg_opt = new jslam_msgs::orbslam_optimization_data;
+        pKfMes.reset(new jslam_msgs::jslam_orb2_kf);
+        std::cout << "global msg INITIALIZED (RESET)" << std::endl;
+        //data_flag = false;
+        bNewKf = false;
+        std::cout << "data flag INITIALIZED (FALSE)" << std::endl;
+
+        data_publisher dpub(nodeHandler);
+
+        ros::Rate r(100);
+        while(ros::ok())
+        {
+            //dpub.publish_data();
+            dpub.publish_orb2_output();
+            ros::spinOnce();
+            r.sleep();
+        }
+
+        //-----------------
+
+        //ros::spin();
+
+        // Stop all threads
+        SLAM.Shutdown();
+
+        // Save camera trajectory
+        SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    }
+    catch (std::exception& e)
+    {
+        ROS_ERROR("exception: %s", e.what());
+        return 0;
+    }
 
     ros::shutdown();
 

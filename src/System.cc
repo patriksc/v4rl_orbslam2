@@ -32,6 +32,8 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
                const bool bUseViewer):mSensor(sensor),mbReset(false),mbActivateLocalizationMode(false),
         mbDeactivateLocalizationMode(false)
 {
+    mdElTotalTrack = 0;
+
     // Output welcome message
     cout << endl <<
     "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl <<
@@ -69,6 +71,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         exit(-1);
     }
     cout << "Vocabulary loaded!" << endl << endl;
+
+    cout << "ENTER to continue..." << endl << endl;
+    std::cin.get(); //wait to start bagfile recording
 
     //Create KeyFrame Database
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
@@ -203,13 +208,32 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 
 cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
 {
+    static size_t iFramecount = 0;
+    ++iFramecount;
+    static struct timeval tStart;
+    static bool bInitTime = false;
+    if(!bInitTime)
+    {
+        gettimeofday(&tStart,NULL);
+        bInitTime = true;
+    }
+    if((iFramecount > 0) && (iFramecount % 50 == 0))
+    {
+        static struct timeval tNow;
+        gettimeofday(&tNow,NULL);
+        double dElapsed = (tNow.tv_sec - tStart.tv_sec) + (tNow.tv_usec - tStart.tv_usec) / 1000000.0;
+        double dRate = static_cast<double>(iFramecount) / dElapsed;
+        cout << ">>>>> Input Framerate: " << dRate << " fps" << endl;
+    }
+
+    //interface to enter cam image stream in the SLAM system
     if(mSensor!=MONOCULAR)
     {
         cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
         exit(-1);
     }
 
-    // Check mode change
+    // Check mode change (from GUI)
     {
         unique_lock<mutex> lock(mMutexMode);
         if(mbActivateLocalizationMode)
@@ -243,7 +267,17 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     }
     }
 
-    return mpTracker->GrabImageMonocular(im,timestamp);
+    gettimeofday(&mtStartTrack,NULL);
+
+    cv::Mat RetVal =  mpTracker->GrabImageMonocular(im,timestamp);
+
+    gettimeofday(&mtNowTrack,NULL);
+    double dElTrack = (mtNowTrack.tv_sec - mtStartTrack.tv_sec) + (mtNowTrack.tv_usec - mtStartTrack.tv_usec) / 1000000.0;
+    mdElTotalTrack += dElTrack;
+    cout << "Tracking time last call: " << dElTrack << " sec" << endl;
+    cout << "Mean tracking time: " << mdElTotalTrack/static_cast<double>(iFramecount) << " sec" << endl;
+
+    return RetVal;
 }
 
 void System::ActivateLocalizationMode()

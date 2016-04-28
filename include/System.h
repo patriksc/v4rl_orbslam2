@@ -36,6 +36,8 @@
 #include "ORBVocabulary.h"
 #include "Viewer.h"
 
+#include <time.h>
+
 namespace ORB_SLAM2
 {
 
@@ -156,6 +158,12 @@ private:
     std::mutex mMutexMode;
     bool mbActivateLocalizationMode;
     bool mbDeactivateLocalizationMode;
+
+
+
+    //timemeas
+    struct timeval mtStartTrack, mtNowTrack;
+    double mdElTotalTrack;
 };
 
 }// namespace ORB_SLAM

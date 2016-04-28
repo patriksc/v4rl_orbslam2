@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM2)
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
@@ -28,7 +30,7 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(catkin REQUIRED COMPONENTS jslam_msgs)
+find_package(catkin REQUIRED COMPONENTS jslam_msgs cv_bridge)
 find_package(OpenCV 2.4.3 REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
