@@ -34,13 +34,13 @@
 #include <ros/ros.h>
 #include <ros/publisher.h>
 
-#include <jslam_msgs/cv_keypoint.h>
-#include <jslam_msgs/orbslam2_mappoint.h>
-#include <jslam_msgs/orbslam2_kf.h>
-#include <jslam_msgs/orbslam_optimization_data.h>
+//#include <jslam_msgs/cv_keypoint.h>
+//#include <jslam_msgs/orbslam2_mappoint.h>
+//#include <jslam_msgs/orbslam2_kf.h>
+//#include <jslam_msgs/orbslam_optimization_data.h>
 
-extern jslam_msgs::orbslam_optimization_data* p_msg_opt;
-extern bool data_flag;
+//extern jslam_msgs::orbslam_optimization_data* p_msg_opt;
+//extern bool data_flag;
 
 //------------------
 
@@ -88,11 +88,12 @@ class ros_bridge
 {
 public:
     ros_bridge();
-    void pass_message(jslam_msgs::orbslam_optimization_data){
+//    void pass_message(jslam_msgs::orbslam_optimization_data){
         //....
-    }
+//    }
 private:
-    jslam_msgs::orbslam_optimization_data opt_msg;
+    bool bbb;
+//    jslam_msgs::orbslam_optimization_data opt_msg;
 };
 
 } //namespace ORB_SLAM

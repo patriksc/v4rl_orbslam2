@@ -34,8 +34,8 @@
 
 #include<mutex>
 
-jslam_msgs::orbslam_optimization_data* p_msg_opt;
-bool data_flag;
+//jslam_msgs::orbslam_optimization_data* p_msg_opt;
+//bool data_flag;
 
 namespace ORB_SLAM2
 {

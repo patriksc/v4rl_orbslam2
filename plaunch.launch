@@ -8,7 +8,7 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ORB_SLAM)/Data/rviz.rviz" output="log">
    </node> -->
 
-  <node pkg="ORB_SLAM2" type="Mono" name="XYZ"  args="/home/patrik/1ws/catkin_cur/src/ORB_SLAM2/Vocabulary/ORBvoc.txt /home/patrik/1ws/catkin_cur/src/ORB_SLAM2/data/bluefox.yaml" output="screen">
+  <node pkg="ORB_SLAM2" type="Mono" name="ORB2Mono1"  args="/home/patrik/1ws/catkin_cur/src/ORB_SLAM2/Vocabulary/ORBvoc.txt /home/patrik/1ws/catkin_cur/src/ORB_SLAM2/data/bluefox.yaml" output="screen">
 
 	<remap from="/camera/image_raw" to="/mv_26805864/image_raw"/>
 

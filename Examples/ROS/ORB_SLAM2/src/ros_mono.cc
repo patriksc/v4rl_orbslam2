@@ -33,9 +33,9 @@
 
 //patriksc: mod
 #include <Optimizer.h>
-#include <jslam_msgs/orbslam_optimization_data.h>
+//#include <jslam_msgs/orbslam_optimization_data.h>
 #include <Tracking.h>
-#include <jslam_msgs/jslam_orb2_kf.h>
+//#include <jslam_msgs/jslam_orb2_kf.h>
 
 //jslam_msgs::orbslam_optimization_data* p_msg_opt;
 //bool data_flag;
@@ -54,39 +54,39 @@ public:
 };
 
 //patriksc: mod
-class data_publisher
-{
-public:
-    data_publisher(ros::NodeHandle nh) : nh_(nh){
-        //pub_ = nh_.advertise<jslam_msgs::orbslam_optimization_data>("orb_opt_data",1);
-        pub_ = nh_.advertise<jslam_msgs::jslam_orb2_kf>("orb2_output",1);
-    }
+//class data_publisher
+//{
+//public:
+//    data_publisher(ros::NodeHandle nh) : nh_(nh){
+//        //pub_ = nh_.advertise<jslam_msgs::orbslam_optimization_data>("orb_opt_data",1);
+//        pub_ = nh_.advertise<jslam_msgs::jslam_orb2_kf>("orb2_output",1);
+//    }
 
-    void publish_data(){
-        if (data_flag){
-            std::cout << "*** publishing opt msg - num of KFs: " << p_msg_opt->keyframes.size() << "; num of MPs: " << p_msg_opt->mappoints.size() << " ***" << std::endl;
-            pub_.publish(*p_msg_opt);
-            p_msg_opt = new jslam_msgs::orbslam_optimization_data;
-            std::cout << "global msg RESET" << std::endl;
-            data_flag = false;
-            std::cout << "data flag FALSE" << std::endl;
-        }
-    }
+//    void publish_data(){
+//        if (data_flag){
+//            std::cout << "*** publishing opt msg - num of KFs: " << p_msg_opt->keyframes.size() << "; num of MPs: " << p_msg_opt->mappoints.size() << " ***" << std::endl;
+//            pub_.publish(*p_msg_opt);
+//            p_msg_opt = new jslam_msgs::orbslam_optimization_data;
+//            std::cout << "global msg RESET" << std::endl;
+//            data_flag = false;
+//            std::cout << "data flag FALSE" << std::endl;
+//        }
+//    }
 
-    void publish_orb2_output()
-    {
-        if(bNewKf)
-        {
-            std::cout << "*** publishing ORB2 Frame"<< std::endl;
-            pub_.publish(*pKfMes);
-            bNewKf = false;
-        }
-    }
+//    void publish_orb2_output()
+//    {
+//        if(bNewKf)
+//        {
+//            std::cout << "*** publishing ORB2 Frame"<< std::endl;
+//            pub_.publish(*pKfMes);
+//            bNewKf = false;
+//        }
+//    }
 
-private:
-    ros::NodeHandle nh_;
-    ros::Publisher pub_;
-};
+//private:
+//    ros::NodeHandle nh_;
+//    ros::Publisher pub_;
+//};
 
 //-----------------
 
@@ -114,19 +114,19 @@ int main(int argc, char **argv)
 
         //patriksc: mod
         //p_msg_opt = new jslam_msgs::orbslam_optimization_data;
-        pKfMes.reset(new jslam_msgs::jslam_orb2_kf);
-        std::cout << "global msg INITIALIZED (RESET)" << std::endl;
+//        pKfMes.reset(new jslam_msgs::jslam_orb2_kf);
+//        std::cout << "global msg INITIALIZED (RESET)" << std::endl;
         //data_flag = false;
-        bNewKf = false;
-        std::cout << "data flag INITIALIZED (FALSE)" << std::endl;
+//        bNewKf = false;
+//        std::cout << "data flag INITIALIZED (FALSE)" << std::endl;
 
-        data_publisher dpub(nodeHandler);
+//        data_publisher dpub(nodeHandler);
 
         ros::Rate r(100);
         while(ros::ok())
         {
             //dpub.publish_data();
-            dpub.publish_orb2_output();
+//            dpub.publish_orb2_output();
             ros::spinOnce();
             r.sleep();
         }
